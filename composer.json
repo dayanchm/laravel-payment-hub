@@ -18,13 +18,25 @@
     ],
     "require": {
         "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.9",
         "illuminate/support": "^11.0|^12.0|^13.0",
         "illuminate/contracts": "^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
     },
     "autoload": {
         "psr-4": {
             "PaymentHub\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PaymentHub\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
     },
     "extra": {
         "laravel": {

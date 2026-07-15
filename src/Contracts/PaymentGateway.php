@@ -4,30 +4,16 @@ declare(strict_types=1);
 
 namespace PaymentHub\Contracts;
 
+use PaymentHub\DTO\PaymentRequest;
+use PaymentHub\DTO\PaymentResponse;
+use PaymentHub\DTO\RefundRequest;
+use PaymentHub\DTO\RefundResponse;
+
 interface PaymentGateway
 {
-    /**
-     * Create a new payment.
-     *
-     * @param array<string, mixed> $data
-     * @return array<string, mixed>
-     */
-    public function createPayment(array $data): array;
+    public function createPayment(PaymentRequest $request): PaymentResponse;
 
-    /**
-     * Retrieve payment information.
-     *
-     * @return array<string, mixed>
-     */
-    public function getPayment(string $paymentId): array;
+    public function getPayment(string $paymentId): PaymentResponse;
 
-    /**
-     * Refund a payment.
-     *
-     * @return array<string, mixed>
-     */
-    public function refund(
-        string $paymentId,
-        ?int $amount = null
-    ): array;
+    public function refund(RefundRequest $request): RefundResponse;
 }
