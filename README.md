@@ -27,6 +27,8 @@ Laravel application:
 composer require paymenthub/laravel-payment-hub
 ```
 
+![Installing Laravel Payment Hub](docs/images/installation.svg)
+
 ### Install from a local directory
 
 If the package has not been published yet, place the Laravel application and
@@ -158,6 +160,8 @@ return response()->json([
     'redirect_url' => $payment->redirectUrl,
 ]);
 ```
+
+![Creating a payment with Laravel Payment Hub](docs/images/basic-usage.svg)
 
 `PaymentResponse` contains these properties:
 
