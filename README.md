@@ -30,7 +30,7 @@ composer require paymenthub/laravel-payment-hub
 php artisan payment-hub:install all
 ```
 
-![Install all payment providers and select a driver](docs/images/install-all-providers.png)
+![Install all payment providers and select a driver](docs/images/install-all-providers.gif)
 
 The `all` installer displays the credentials for every provider. Fill only the
 providers you plan to use and select the default one with `PAYMENT_PROVIDER`:
