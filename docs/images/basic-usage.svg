@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="920" viewBox="0 0 1600 920" role="img" aria-labelledby="title description">
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760" role="img" aria-labelledby="title description">
   <title id="title">Creating a payment with Laravel Payment Hub</title>
-  <desc id="description">PHP example showing how to create a payment request in Laravel.</desc>
+  <desc id="description">Simple PHP example showing the PaymentHub pay method.</desc>
   <defs>
     <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0b1020"/>
@@ -10,61 +10,47 @@
       <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#020617" flood-opacity="0.55"/>
     </filter>
   </defs>
-  <rect width="1600" height="920" fill="#070b16"/>
-  <rect x="60" y="54" width="1480" height="812" rx="24" fill="url(#background)" stroke="#29324d" stroke-width="2" filter="url(#shadow)"/>
+  <rect width="1600" height="760" fill="#070b16"/>
+  <rect x="60" y="54" width="1480" height="652" rx="24" fill="url(#background)" stroke="#29324d" stroke-width="2" filter="url(#shadow)"/>
   <path d="M60 132h1480" stroke="#29324d" stroke-width="2"/>
   <circle cx="105" cy="94" r="11" fill="#ff5f57"/>
   <circle cx="140" cy="94" r="11" fill="#febc2e"/>
   <circle cx="175" cy="94" r="11" fill="#28c840"/>
   <text x="800" y="103" fill="#9ca8c7" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="25" text-anchor="middle">PaymentController.php</text>
 
-  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="27">
-    <text x="105" y="190" fill="#c084fc">use</text>
-    <text x="165" y="190" fill="#f8fafc">PaymentHub\DTO\PaymentRequest;</text>
-    <text x="105" y="235" fill="#c084fc">use</text>
-    <text x="165" y="235" fill="#f8fafc">PaymentHub\Facades\PaymentHub;</text>
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="29">
+    <text x="105" y="195" fill="#c084fc">use</text>
+    <text x="170" y="195" fill="#f8fafc">PaymentHub\Facades\PaymentHub;</text>
 
-    <text x="105" y="325" fill="#93c5fd">$payment</text>
-    <text x="255" y="325" fill="#f8fafc">= PaymentHub::</text>
-    <text x="485" y="325" fill="#67e8f9">createPayment</text>
-    <text x="705" y="325" fill="#f8fafc">(new PaymentRequest(</text>
+    <text x="105" y="285" fill="#93c5fd">$payment</text>
+    <text x="260" y="285" fill="#f8fafc">= PaymentHub::</text>
+    <text x="505" y="285" fill="#67e8f9">pay</text>
+    <text x="560" y="285" fill="#f8fafc">(</text>
 
-    <text x="155" y="370" fill="#fda4af">orderId:</text>
-    <text x="330" y="370" fill="#a7f3d0">'order-123'</text>
-    <text x="540" y="370" fill="#f8fafc">,</text>
+    <text x="155" y="335" fill="#fda4af">amount:</text>
+    <text x="315" y="335" fill="#fde68a">1050</text>
+    <text x="395" y="335" fill="#7081aa">, // 10.50 TRY</text>
 
-    <text x="155" y="415" fill="#fda4af">amount:</text>
-    <text x="315" y="415" fill="#fde68a">1050</text>
-    <text x="395" y="415" fill="#7081aa">, // 10.50 TRY</text>
+    <text x="155" y="385" fill="#fda4af">orderId:</text>
+    <text x="335" y="385" fill="#a7f3d0">'order-123'</text>
+    <text x="545" y="385" fill="#f8fafc">,</text>
 
-    <text x="155" y="460" fill="#fda4af">currency:</text>
-    <text x="350" y="460" fill="#a7f3d0">'TRY'</text>
-    <text x="445" y="460" fill="#f8fafc">,</text>
+    <text x="155" y="435" fill="#fda4af">description:</text>
+    <text x="405" y="435" fill="#a7f3d0">'Order #123'</text>
+    <text x="625" y="435" fill="#f8fafc">,</text>
 
-    <text x="155" y="505" fill="#fda4af">description:</text>
-    <text x="405" y="505" fill="#a7f3d0">'Order #123'</text>
-    <text x="625" y="505" fill="#f8fafc">,</text>
+    <text x="155" y="485" fill="#fda4af">driver:</text>
+    <text x="315" y="485" fill="#a7f3d0">'paypal'</text>
+    <text x="465" y="485" fill="#f8fafc">,</text>
 
-    <text x="155" y="550" fill="#fda4af">returnUrl:</text>
-    <text x="370" y="550" fill="#67e8f9">route</text>
-    <text x="455" y="550" fill="#f8fafc">(</text>
-    <text x="472" y="550" fill="#a7f3d0">'payments.success'</text>
-    <text x="790" y="550" fill="#f8fafc">),</text>
+    <text x="105" y="525" fill="#f8fafc">);</text>
 
-    <text x="155" y="595" fill="#fda4af">cancelUrl:</text>
-    <text x="350" y="595" fill="#67e8f9">route</text>
-    <text x="435" y="595" fill="#f8fafc">(</text>
-    <text x="452" y="595" fill="#a7f3d0">'payments.cancel'</text>
-    <text x="755" y="595" fill="#f8fafc">),</text>
+    <text x="105" y="595" fill="#c084fc">return</text>
+    <text x="225" y="595" fill="#67e8f9">redirect</text>
+    <text x="365" y="595" fill="#f8fafc">()-&gt;away(</text>
+    <text x="555" y="595" fill="#93c5fd">$payment</text>
+    <text x="705" y="595" fill="#f8fafc">-&gt;redirectUrl);</text>
 
-    <text x="105" y="640" fill="#f8fafc">));</text>
-
-    <text x="105" y="730" fill="#c084fc">return</text>
-    <text x="225" y="730" fill="#67e8f9">redirect</text>
-    <text x="365" y="730" fill="#f8fafc">()-&gt;away(</text>
-    <text x="555" y="730" fill="#93c5fd">$payment</text>
-    <text x="705" y="730" fill="#f8fafc">-&gt;redirectUrl);</text>
-
-    <text x="105" y="810" fill="#7081aa">// The customer continues on the provider's secure payment page.</text>
+    <text x="105" y="665" fill="#7081aa">// Return and cancel URLs are provided automatically.</text>
   </g>
 </svg>

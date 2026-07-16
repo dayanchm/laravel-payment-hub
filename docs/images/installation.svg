@@ -23,10 +23,10 @@
   <text x="145" y="238" fill="#f8fafc" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="28">composer require paymenthub/laravel-payment-hub</text>
   <text x="105" y="286" fill="#6ee7b7" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="25">Package installed successfully.</text>
 
-  <text x="105" y="362" fill="#7081aa" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="25"># Publish the configuration</text>
+  <text x="105" y="362" fill="#7081aa" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="25"># Install config and built-in routes</text>
   <text x="105" y="410" fill="#67e8f9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="28">$</text>
-  <text x="145" y="410" fill="#f8fafc" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="28">php artisan vendor:publish --tag=payment-hub-config</text>
-  <text x="105" y="458" fill="#6ee7b7" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="25">Copied File [config/payment-hub.php]</text>
+  <text x="145" y="410" fill="#f8fafc" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="28">php artisan payment-hub:install paytr</text>
+  <text x="105" y="458" fill="#6ee7b7" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="25">Laravel Payment Hub is installed.</text>
 
   <text x="105" y="534" fill="#7081aa" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="25"># Clear cached configuration</text>
   <text x="105" y="582" fill="#67e8f9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="28">$</text>

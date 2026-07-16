@@ -59,6 +59,61 @@ final class PaymentManagerTest extends TestCase
         $manager->driver();
     }
 
+    public function test_it_creates_a_payment_with_the_simple_pay_api(): void
+    {
+        $gateway = new class implements PaymentGateway
+        {
+            public ?PaymentRequest $request = null;
+
+            public function createPayment(PaymentRequest $request): PaymentResponse
+            {
+                $this->request = $request;
+
+                return new PaymentResponse(
+                    'payment-simple',
+                    PaymentStatus::Pending,
+                    $request->amount,
+                    $request->currency,
+                    'https://provider.test/checkout',
+                );
+            }
+
+            public function getPayment(string $paymentId): PaymentResponse
+            {
+                throw new \LogicException('Not used by this test.');
+            }
+
+            public function refund(RefundRequest $request): RefundResponse
+            {
+                throw new \LogicException('Not used by this test.');
+            }
+        };
+        $manager = new PaymentManager(
+            ['default' => 'fake'],
+            static fn (string $route): string => "https://shop.test/{$route}",
+        );
+        $manager->extend('fake', $gateway);
+
+        $payment = $manager->pay(
+            amount: 1050,
+            currency: 'try',
+            orderId: 'order-simple',
+            description: 'Simple checkout',
+        );
+
+        self::assertSame('payment-simple', $payment->id);
+        self::assertSame('order-simple', $gateway->request?->orderId);
+        self::assertSame('TRY', $gateway->request?->currency);
+        self::assertSame(
+            'https://shop.test/payment-hub.success',
+            $gateway->request?->returnUrl,
+        );
+        self::assertSame(
+            'https://shop.test/payment-hub.cancel',
+            $gateway->request?->cancelUrl,
+        );
+    }
+
     private function fakeGateway(): PaymentGateway
     {
         return new class implements PaymentGateway

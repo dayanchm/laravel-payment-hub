@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaymentHub\Managers;
 
 use Closure;
+use Illuminate\Support\Str;
 use PaymentHub\Contracts\CapturesPayments;
 use PaymentHub\Contracts\PaymentGateway;
 use PaymentHub\DTO\PaymentRequest;
@@ -23,8 +24,10 @@ class PaymentManager implements PaymentGateway
     private array $customCreators = [];
 
     /** @param array<string, mixed> $config */
-    public function __construct(private array $config = [])
-    {
+    public function __construct(
+        private array $config = [],
+        private readonly ?Closure $routeUrlResolver = null,
+    ) {
     }
 
     /**
@@ -90,6 +93,50 @@ class PaymentManager implements PaymentGateway
     public function createPayment(PaymentRequest $request): PaymentResponse
     {
         return $this->driver()->createPayment($request);
+    }
+
+    /**
+     * Create a payment without manually constructing a PaymentRequest DTO.
+     *
+     * @param array<string, mixed> $customer
+     * @param array<string, mixed> $metadata
+     */
+    public function pay(
+        int $amount,
+        string $currency = 'TRY',
+        ?string $orderId = null,
+        ?string $description = null,
+        array $customer = [],
+        array $metadata = [],
+        ?string $returnUrl = null,
+        ?string $cancelUrl = null,
+        ?string $driver = null,
+    ): PaymentResponse {
+        $driverName = $this->normalizeName($driver ?? $this->getDefaultDriver());
+        $providerConfig = $this->providerConfig($driverName);
+        $returnUrl ??= $this->configuredUrl(
+            $providerConfig,
+            'return_url',
+            $driverName === 'iyzico'
+                ? 'payment-hub.iyzico.callback'
+                : ($driverName === 'paypal' ? 'payment-hub.paypal.return' : 'payment-hub.success'),
+        );
+        $cancelUrl ??= $this->configuredUrl(
+            $providerConfig,
+            'cancel_url',
+            'payment-hub.cancel',
+        );
+
+        return $this->driver($driverName)->createPayment(new PaymentRequest(
+            orderId: $orderId ?? (string) Str::uuid(),
+            amount: $amount,
+            currency: strtoupper($currency),
+            description: $description,
+            customer: $customer,
+            metadata: $metadata,
+            returnUrl: $returnUrl,
+            cancelUrl: $cancelUrl,
+        ));
     }
 
     public function getPayment(string $paymentId): PaymentResponse
@@ -164,5 +211,24 @@ class PaymentManager implements PaymentGateway
         }
 
         return $name;
+    }
+
+    /** @param array<string, mixed> $providerConfig */
+    private function configuredUrl(
+        array $providerConfig,
+        string $configKey,
+        string $routeName,
+    ): ?string {
+        $configured = $providerConfig[$configKey] ?? null;
+
+        if (is_string($configured) && trim($configured) !== '') {
+            return $configured;
+        }
+
+        if ($this->routeUrlResolver === null) {
+            return null;
+        }
+
+        return ($this->routeUrlResolver)($routeName);
     }
 }

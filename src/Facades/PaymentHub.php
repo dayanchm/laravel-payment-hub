@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static \PaymentHub\Contracts\PaymentGateway driver(?string $name = null)
  * @method static \PaymentHub\DTO\PaymentResponse createPayment(\PaymentHub\DTO\PaymentRequest $request)
+ * @method static \PaymentHub\DTO\PaymentResponse pay(int $amount, string $currency = 'TRY', ?string $orderId = null, ?string $description = null, array $customer = [], array $metadata = [], ?string $returnUrl = null, ?string $cancelUrl = null, ?string $driver = null)
  * @method static \PaymentHub\DTO\PaymentResponse getPayment(string $paymentId)
  * @method static \PaymentHub\DTO\PaymentResponse capturePayment(string $paymentId)
  * @method static \PaymentHub\DTO\RefundResponse refund(\PaymentHub\DTO\RefundRequest $request)

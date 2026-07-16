@@ -52,5 +52,50 @@ return [
             'sandbox' => env('PAYPAL_SANDBOX', true),
             'currency' => env('PAYPAL_CURRENCY', 'USD'),
         ],
+
+        'worldline' => [
+            'driver' => PaymentHub\Drivers\Worldline\WorldlineDriver::class,
+            'merchant_id' => env('WORLDLINE_MERCHANT_ID'),
+            'api_key' => env('WORLDLINE_API_KEY'),
+            'api_secret' => env('WORLDLINE_API_SECRET'),
+            'sandbox' => env('WORLDLINE_SANDBOX', true),
+            'currency' => env('WORLDLINE_CURRENCY', 'EUR'),
+            'locale' => env('WORLDLINE_LOCALE', 'en_GB'),
+            'base_url' => env('WORLDLINE_BASE_URL'),
+        ],
+
+        'adyen' => [
+            'driver' => PaymentHub\Drivers\Adyen\AdyenDriver::class,
+            'api_key' => env('ADYEN_API_KEY'),
+            'merchant_account' => env('ADYEN_MERCHANT_ACCOUNT'),
+            'currency' => env('ADYEN_CURRENCY', 'EUR'),
+            'base_url' => env('ADYEN_BASE_URL', 'https://checkout-test.adyen.com/v72'),
+        ],
+
+        'saferpay' => [
+            'driver' => PaymentHub\Drivers\Saferpay\SaferpayDriver::class,
+            'customer_id' => env('SAFERPAY_CUSTOMER_ID'),
+            'terminal_id' => env('SAFERPAY_TERMINAL_ID'),
+            'username' => env('SAFERPAY_USERNAME'),
+            'password' => env('SAFERPAY_PASSWORD'),
+            'sandbox' => env('SAFERPAY_SANDBOX', true),
+            'currency' => env('SAFERPAY_CURRENCY', 'CHF'),
+            'spec_version' => env('SAFERPAY_SPEC_VERSION', '1.53'),
+        ],
+
+        'datatrans' => [
+            'driver' => PaymentHub\Drivers\Datatrans\DatatransDriver::class,
+            'merchant_id' => env('DATATRANS_MERCHANT_ID'),
+            'password' => env('DATATRANS_PASSWORD'),
+            'sandbox' => env('DATATRANS_SANDBOX', true),
+            'currency' => env('DATATRANS_CURRENCY', 'CHF'),
+            'auto_settle' => env('DATATRANS_AUTO_SETTLE', true),
+        ],
+
+        'payrexx' => [
+            'driver' => PaymentHub\Drivers\Payrexx\PayrexxDriver::class,
+            'instance' => env('PAYREXX_INSTANCE'),
+            'api_secret' => env('PAYREXX_API_SECRET'),
+        ],
     ],
 ];

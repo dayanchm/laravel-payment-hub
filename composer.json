@@ -8,7 +8,12 @@
         "payment",
         "payment-gateway",
         "stripe",
-        "paypal"
+        "paypal",
+        "worldline",
+        "adyen",
+        "saferpay",
+        "datatrans",
+        "payrexx"
     ],
     "authors": [
         {
@@ -19,10 +24,13 @@
     "require": {
         "php": "^8.2",
         "guzzlehttp/guzzle": "^7.9",
+        "illuminate/console": "^11.0|^12.0|^13.0",
         "illuminate/support": "^11.0|^12.0|^13.0",
-        "illuminate/contracts": "^11.0|^12.0|^13.0"
+        "illuminate/contracts": "^11.0|^12.0|^13.0",
+        "illuminate/routing": "^11.0|^12.0|^13.0"
     },
     "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
         "phpunit/phpunit": "^11.5"
     },
     "autoload": {

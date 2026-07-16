@@ -9,12 +9,65 @@ payment providers in Laravel 11, 12, and 13 applications.
 - PayPal Orders and Captures
 - Iyzico Checkout Form
 - PayTR iFrame API
+- Worldline Hosted Checkout
+- Adyen Pay by Link
+- SIX Payment Services / Saferpay Payment Page
+- Datatrans Payment Page
+- Payrexx Gateway
 
 ## Requirements
 
 - PHP 8.2 or later
 - Laravel 11, 12, or 13
 - Guzzle 7.9 or later
+
+## Quick start
+
+Install the package and run its installer:
+
+```bash
+composer require paymenthub/laravel-payment-hub
+php artisan payment-hub:install all
+```
+
+The `all` installer displays the credentials for every provider. Fill only the
+providers you plan to use and select the default one with `PAYMENT_PROVIDER`:
+
+```dotenv
+PAYMENT_PROVIDER=paytr
+PAYTR_MERCHANT_ID=xxxxxx
+PAYTR_MERCHANT_KEY=xxxxxxxxxxxxx
+PAYTR_MERCHANT_SALT=xxxxxxxxxxxxx
+PAYTR_SANDBOX=true
+```
+
+Create a payment without importing or constructing a DTO:
+
+```php
+use PaymentHub\Facades\PaymentHub;
+
+$payment = PaymentHub::pay(
+    amount: 1050,
+    orderId: 'order-123',
+    description: 'Order #123',
+    customer: [
+        'ip' => request()->ip(),
+        'email' => 'customer@example.com',
+        'name' => 'Ada Lovelace',
+        'address' => 'Example Street 1',
+        'phone' => '+905551112233',
+    ],
+);
+
+return redirect()->away($payment->redirectUrl);
+```
+
+The package automatically generates an order ID when `orderId` is omitted and
+automatically uses its built-in return and cancel routes.
+
+Installing every provider does not contact or create accounts at those
+providers. It publishes one configuration file and prepares all `.env` keys;
+each provider becomes usable when its own credentials are filled in.
 
 ## Installation
 
@@ -25,6 +78,7 @@ Laravel application:
 
 ```bash
 composer require paymenthub/laravel-payment-hub
+php artisan payment-hub:install stripe
 ```
 
 ![Installing Laravel Payment Hub](docs/images/installation.svg)
@@ -45,14 +99,77 @@ Run the following commands from the Laravel application directory:
 ```bash
 composer config repositories.payment-hub path ../laravel-payment-hub
 composer require paymenthub/laravel-payment-hub:@dev
+php artisan payment-hub:install stripe
 ```
 
 The service provider is registered through Laravel package discovery, so you do
 not need to add it manually.
 
-## Publish the configuration
+## Built-in routes
 
-Run this command inside the Laravel application:
+The package registers these routes automatically:
+
+| Method | URL | Route name |
+| --- | --- | --- |
+| `GET` | `/payment-hub/success` | `payment-hub.success` |
+| `GET` | `/payment-hub/cancel` | `payment-hub.cancel` |
+| `POST` | `/payment-hub/iyzico/callback` | `payment-hub.iyzico.callback` |
+| `GET` | `/payment-hub/paypal/return` | `payment-hub.paypal.return` |
+| `POST` | `/payment-hub/paytr/callback` | `payment-hub.paytr.callback` |
+
+Configure the PayTR merchant panel callback URL as:
+
+```text
+https://your-domain.com/payment-hub/paytr/callback
+```
+
+## Handle payment callbacks
+
+Verified Iyzico, PayPal, and PayTR callbacks dispatch a
+`PaymentCallbackReceived` event. Create a listener in your Laravel application:
+
+```bash
+php artisan make:listener UpdateOrderPaymentStatus
+```
+
+Handle the package event in the listener:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Models\Order;
+use PaymentHub\Events\PaymentCallbackReceived;
+use PaymentHub\Support\PaymentStatus;
+
+final class UpdateOrderPaymentStatus
+{
+    public function handle(PaymentCallbackReceived $event): void
+    {
+        $order = Order::where('payment_id', $event->paymentId)->first();
+
+        if ($order === null) {
+            return;
+        }
+
+        $order->update([
+            'payment_status' => $event->status->value,
+            'paid_at' => $event->status === PaymentStatus::Succeeded
+                ? now()
+                : null,
+        ]);
+    }
+}
+```
+
+Callback notifications may be delivered more than once. Make the listener
+idempotent and do not fulfill the same order twice.
+
+## Publish the configuration manually
+
+The install command publishes the configuration automatically. To publish it
+manually, run:
 
 ```bash
 php artisan vendor:publish --tag=payment-hub-config
@@ -73,7 +190,14 @@ Select the default provider in your `.env` file:
 PAYMENT_PROVIDER=stripe
 ```
 
-Supported values are `stripe`, `iyzico`, `paytr`, and `paypal`.
+Supported values are `stripe`, `iyzico`, `paytr`, `paypal`, `worldline`,
+`adyen`, `saferpay`, `datatrans`, and `payrexx`.
+
+To print every provider's `.env` template at once, run:
+
+```bash
+php artisan payment-hub:install all
+```
 
 ### Stripe
 
@@ -93,7 +217,6 @@ PAYMENT_PROVIDER=iyzico
 IYZICO_API_KEY=xxxxxxxxxxxxx
 IYZICO_SECRET_KEY=xxxxxxxxxxxxx
 IYZICO_SANDBOX=true
-IYZICO_CALLBACK_URL=https://example.com/payments/iyzico/callback
 IYZICO_LOCALE=en
 ```
 
@@ -105,8 +228,6 @@ PAYTR_MERCHANT_ID=xxxxxx
 PAYTR_MERCHANT_KEY=xxxxxxxxxxxxx
 PAYTR_MERCHANT_SALT=xxxxxxxxxxxxx
 PAYTR_SANDBOX=true
-PAYTR_RETURN_URL=https://example.com/payments/success
-PAYTR_CANCEL_URL=https://example.com/payments/cancel
 PAYTR_LOCALE=en
 ```
 
@@ -119,6 +240,68 @@ PAYPAL_CLIENT_SECRET=xxxxxxxxxxxxx
 PAYPAL_SANDBOX=true
 PAYPAL_CURRENCY=USD
 ```
+
+### Worldline
+
+```dotenv
+PAYMENT_PROVIDER=worldline
+WORLDLINE_MERCHANT_ID=your_pspid
+WORLDLINE_API_KEY=xxxxxxxxxxxxx
+WORLDLINE_API_SECRET=xxxxxxxxxxxxx
+WORLDLINE_SANDBOX=true
+WORLDLINE_CURRENCY=EUR
+WORLDLINE_LOCALE=en_GB
+```
+
+### Adyen
+
+```dotenv
+PAYMENT_PROVIDER=adyen
+ADYEN_API_KEY=xxxxxxxxxxxxx
+ADYEN_MERCHANT_ACCOUNT=YourMerchantAccount
+ADYEN_CURRENCY=EUR
+ADYEN_BASE_URL=https://checkout-test.adyen.com/v72
+```
+
+For live payments, set `ADYEN_BASE_URL` to the live Checkout API URL assigned
+to your Adyen account.
+
+### SIX Payment Services / Saferpay
+
+```dotenv
+PAYMENT_PROVIDER=saferpay
+SAFERPAY_CUSTOMER_ID=xxxxxxxx
+SAFERPAY_TERMINAL_ID=xxxxxxxx
+SAFERPAY_USERNAME=API_xxxxxxxx
+SAFERPAY_PASSWORD=xxxxxxxxxxxxx
+SAFERPAY_SANDBOX=true
+SAFERPAY_CURRENCY=CHF
+```
+
+The installer also accepts `php artisan payment-hub:install six`, but the
+driver name stored in `.env` is `saferpay`.
+
+### Datatrans
+
+```dotenv
+PAYMENT_PROVIDER=datatrans
+DATATRANS_MERCHANT_ID=xxxxxxxx
+DATATRANS_PASSWORD=xxxxxxxxxxxxx
+DATATRANS_SANDBOX=true
+DATATRANS_CURRENCY=CHF
+DATATRANS_AUTO_SETTLE=true
+```
+
+### Payrexx
+
+```dotenv
+PAYMENT_PROVIDER=payrexx
+PAYREXX_INSTANCE=your-instance
+PAYREXX_API_SECRET=xxxxxxxxxxxxx
+```
+
+Use only the instance name. For example, enter `example` for
+`example.payrexx.com`.
 
 ## Monetary values
 
@@ -180,6 +363,54 @@ You can select a driver without changing the default provider in `.env`:
 $gateway = PaymentHub::driver('paypal');
 $payment = $gateway->createPayment($request);
 ```
+
+With the simple API, select a provider separately for each order:
+
+```php
+$payment = PaymentHub::pay(
+    amount: 4990,
+    currency: 'EUR',
+    orderId: 'order-1001',
+    driver: 'adyen',
+);
+```
+
+This does not change the global default. Another request can use
+`driver: 'worldline'`, `driver: 'payrexx'`, or any other configured provider.
+
+## European hosted checkout usage
+
+Worldline, Adyen, Saferpay, Datatrans, and Payrexx use the same simple call:
+
+```php
+use PaymentHub\Facades\PaymentHub;
+
+$payment = PaymentHub::pay(
+    amount: 4990,
+    currency: 'EUR',
+    orderId: 'order-1001',
+    description: 'Order #1001',
+);
+
+return redirect()->away($payment->redirectUrl);
+```
+
+The selected provider comes from `PAYMENT_PROVIDER`. The built-in success and
+cancel routes are supplied automatically. Store `$payment->id` on the order so
+you can retrieve its status later:
+
+```php
+$payment = PaymentHub::getPayment($storedPaymentId);
+
+if ($payment->status->value === 'succeeded') {
+    // Mark the order as paid. In production, confirm this from a webhook too.
+}
+```
+
+Adyen refunds use the payment PSP reference received from an Adyen webhook,
+not the payment-link ID. Worldline refunds use the payment ID returned when the
+hosted checkout status is retrieved. Saferpay starts with a payment-page token;
+`getPayment()` returns the resulting transaction ID after checkout.
 
 ## Stripe usage
 

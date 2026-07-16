@@ -6,7 +6,9 @@ namespace PaymentHub;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Support\ServiceProvider;
+use PaymentHub\Console\InstallPaymentHubCommand;
 
 final class PaymentHubServiceProvider extends ServiceProvider
 {
@@ -20,7 +22,12 @@ final class PaymentHubServiceProvider extends ServiceProvider
         $this->app->singleton(PaymentHub::class, function (Application $app): PaymentHub {
             $config = $app->make(Repository::class)->get('payment-hub', []);
 
-            return new PaymentHub(is_array($config) ? $config : []);
+            return new PaymentHub(
+                is_array($config) ? $config : [],
+                static fn (string $route): string => $app
+                    ->make(UrlGenerator::class)
+                    ->route($route),
+            );
         });
 
         $this->app->alias(PaymentHub::class, 'payment-hub');
@@ -28,9 +35,15 @@ final class PaymentHubServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->loadRoutesFrom(__DIR__ . '/../routes/payment-hub.php');
+
         $this->publishes([
             __DIR__ . '/../config/payment-hub.php'
                 => $this->app->configPath('payment-hub.php'),
         ], 'payment-hub-config');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([InstallPaymentHubCommand::class]);
+        }
     }
 }
