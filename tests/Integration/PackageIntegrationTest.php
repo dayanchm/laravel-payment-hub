@@ -6,7 +6,15 @@ namespace PaymentHub\Tests\Integration;
 
 use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase;
+use PaymentHub\Contracts\PaymentGateway;
+use PaymentHub\DTO\PaymentRequest;
+use PaymentHub\DTO\PaymentResponse;
+use PaymentHub\DTO\RefundRequest;
+use PaymentHub\DTO\RefundResponse;
+use PaymentHub\PaymentHub;
 use PaymentHub\PaymentHubServiceProvider;
+use PaymentHub\Support\PaymentStatus;
+use PaymentHub\Support\RefundStatus;
 
 final class PackageIntegrationTest extends TestCase
 {
@@ -48,6 +56,8 @@ final class PackageIntegrationTest extends TestCase
         }
 
         $app['config']->set('app.url', 'https://shop.test');
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('p', 32)));
+        $app['config']->set('payment-hub.demo.enabled', true);
     }
 
     public function test_it_registers_the_built_in_routes(): void
@@ -61,6 +71,57 @@ final class PackageIntegrationTest extends TestCase
         self::assertNotNull($this->app['router']->getRoutes()->getByName('payment-hub.paytr.callback'));
         self::assertNotNull($this->app['router']->getRoutes()->getByName('payment-hub.iyzico.callback'));
         self::assertNotNull($this->app['router']->getRoutes()->getByName('payment-hub.paypal.return'));
+        self::assertNotNull($this->app['router']->getRoutes()->getByName('payment-hub.demo'));
+        self::assertNotNull($this->app['router']->getRoutes()->getByName('payment-hub.demo.pay'));
+    }
+
+    public function test_demo_checkout_displays_and_redirects_to_the_selected_provider(): void
+    {
+        $gateway = new class implements PaymentGateway {
+            public ?PaymentRequest $request = null;
+
+            public function createPayment(PaymentRequest $request): PaymentResponse
+            {
+                $this->request = $request;
+
+                return new PaymentResponse(
+                    id: 'demo-payment',
+                    status: PaymentStatus::RequiresAction,
+                    amount: $request->amount,
+                    currency: $request->currency,
+                    redirectUrl: 'https://provider.test/checkout',
+                );
+            }
+
+            public function getPayment(string $paymentId): PaymentResponse
+            {
+                return new PaymentResponse($paymentId, PaymentStatus::Pending, 0, 'EUR');
+            }
+
+            public function refund(RefundRequest $request): RefundResponse
+            {
+                return new RefundResponse('refund', $request->paymentId, RefundStatus::Pending, 0);
+            }
+        };
+        $this->app['config']->set('payment-hub.providers.fake', ['driver' => $gateway::class]);
+        $this->app->make(PaymentHub::class)->extend('fake', $gateway);
+
+        $this->get('/payment-hub/demo')
+            ->assertOk()
+            ->assertSee('Example payment')
+            ->assertSee('SIX / Saferpay');
+
+        $this->post('/payment-hub/demo/pay', [
+            'provider' => 'fake',
+            'amount' => '49.90',
+            'currency' => 'EUR',
+            'order_id' => 'demo-order',
+            'description' => 'Demo order',
+        ])->assertRedirect('https://provider.test/checkout');
+
+        self::assertNotNull($gateway->request);
+        self::assertSame(4990, $gateway->request->amount);
+        self::assertSame('stripe', $this->app->make(PaymentHub::class)->getDefaultDriver());
     }
 
     public function test_the_install_command_publishes_configuration(): void
@@ -84,6 +145,7 @@ final class PackageIntegrationTest extends TestCase
     {
         $this->artisan('payment-hub:install', ['provider' => 'all'])
             ->expectsOutputToContain('PAYMENT_PROVIDER=stripe')
+            ->expectsOutputToContain('PAYMENT_HUB_DEMO=true')
             ->expectsOutputToContain('STRIPE_SECRET=')
             ->expectsOutputToContain('ADYEN_API_KEY=')
             ->expectsOutputToContain('WORLDLINE_API_KEY=')

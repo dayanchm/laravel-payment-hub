@@ -13,6 +13,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Demo Checkout
+    |--------------------------------------------------------------------------
+    |
+    | The example checkout is enabled outside production by default. Set this
+    | to false after testing or whenever the demo must not be publicly visible.
+    |
+    */
+
+    'demo' => [
+        'enabled' => env('PAYMENT_HUB_DEMO', env('APP_ENV', 'production') !== 'production'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Payment Providers
     |--------------------------------------------------------------------------
     */

@@ -30,13 +30,14 @@ composer require paymenthub/laravel-payment-hub
 php artisan payment-hub:install all
 ```
 
-![Install all payment providers and select a driver](docs/images/install-all-providers.gif)
+![Install the package, open the demo checkout, and redirect to a provider](docs/images/payment-flow.gif)
 
 The `all` installer displays the credentials for every provider. Fill only the
 providers you plan to use and select the default one with `PAYMENT_PROVIDER`:
 
 ```dotenv
 PAYMENT_PROVIDER=paytr
+PAYMENT_HUB_DEMO=true
 PAYTR_MERCHANT_ID=xxxxxx
 PAYTR_MERCHANT_KEY=xxxxxxxxxxxxx
 PAYTR_MERCHANT_SALT=xxxxxxxxxxxxx
@@ -115,6 +116,8 @@ The package registers these routes automatically:
 | --- | --- | --- |
 | `GET` | `/payment-hub/success` | `payment-hub.success` |
 | `GET` | `/payment-hub/cancel` | `payment-hub.cancel` |
+| `GET` | `/payment-hub/demo` | `payment-hub.demo` |
+| `POST` | `/payment-hub/demo/pay` | `payment-hub.demo.pay` |
 | `POST` | `/payment-hub/iyzico/callback` | `payment-hub.iyzico.callback` |
 | `GET` | `/payment-hub/paypal/return` | `payment-hub.paypal.return` |
 | `POST` | `/payment-hub/paytr/callback` | `payment-hub.paytr.callback` |
@@ -124,6 +127,42 @@ Configure the PayTR merchant panel callback URL as:
 ```text
 https://your-domain.com/payment-hub/paytr/callback
 ```
+
+## Automatic example checkout
+
+After installation, open this URL in your Laravel application:
+
+```text
+http://localhost:8000/payment-hub/demo
+```
+
+The package automatically provides `DemoPaymentController`, a responsive
+payment form, and the required routes. Select a provider, enter an amount, and
+the form calls `PaymentHub::pay()` before redirecting the browser to that
+provider's hosted checkout page.
+
+![Laravel Payment Hub example checkout](docs/images/demo-checkout.png)
+
+```dotenv
+PAYMENT_HUB_DEMO=true
+```
+
+The demo is enabled by default outside production. In production it returns
+404 unless `PAYMENT_HUB_DEMO=true` is explicitly configured. Disable it after
+testing:
+
+```dotenv
+PAYMENT_HUB_DEMO=false
+```
+
+To customize the example screen, publish its Blade view:
+
+```bash
+php artisan vendor:publish --tag=payment-hub-views
+```
+
+This creates `resources/views/vendor/payment-hub/demo.blade.php` in the host
+Laravel application.
 
 ## Handle payment callbacks
 

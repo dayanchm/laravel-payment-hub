@@ -36,11 +36,17 @@ final class PaymentHubServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadRoutesFrom(__DIR__ . '/../routes/payment-hub.php');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'payment-hub');
 
         $this->publishes([
             __DIR__ . '/../config/payment-hub.php'
                 => $this->app->configPath('payment-hub.php'),
         ], 'payment-hub-config');
+
+        $this->publishes([
+            __DIR__ . '/../resources/views/demo.blade.php'
+                => $this->app->resourcePath('views/vendor/payment-hub/demo.blade.php'),
+        ], 'payment-hub-views');
 
         if ($this->app->runningInConsole()) {
             $this->commands([InstallPaymentHubCommand::class]);

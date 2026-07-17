@@ -34,6 +34,10 @@ final class InstallPaymentHubCommand extends Command
             return self::FAILURE;
         }
 
+        if (! in_array('PAYMENT_HUB_DEMO=true', $environment, true)) {
+            array_splice($environment, 1, 0, ['PAYMENT_HUB_DEMO=true']);
+        }
+
         $arguments = [
             '--provider' => PaymentHubServiceProvider::class,
             '--tag' => 'payment-hub-config',
@@ -66,6 +70,7 @@ final class InstallPaymentHubCommand extends Command
         $this->line('Built-in routes:');
         $this->components->twoColumnDetail('Success', '/payment-hub/success');
         $this->components->twoColumnDetail('Cancel', '/payment-hub/cancel');
+        $this->components->twoColumnDetail('Demo checkout', '/payment-hub/demo');
         $this->components->twoColumnDetail('Iyzico callback', '/payment-hub/iyzico/callback');
         $this->components->twoColumnDetail('PayPal return', '/payment-hub/paypal/return');
         $this->components->twoColumnDetail('PayTR callback', '/payment-hub/paytr/callback');
